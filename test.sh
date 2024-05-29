@@ -162,7 +162,7 @@ function test_cruise_control_ui() {
 
   base_url="$(get_cruise_control_url)"
 
-  info "Waiting until Cruise Control is ready..."
+  info "Waiting until Cruise Control UI is ready..."
   if ! wait_until_ready "${READINESS_TIMEOUT}" "${base_url}"; then
     err "Timed out"
     return 127
@@ -186,6 +186,7 @@ function main() {
   setup
   test_cruise_control
   test_cruise_control_ui
+  sleep 36000
 }
 
 main

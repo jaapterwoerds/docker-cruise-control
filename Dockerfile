@@ -1,5 +1,5 @@
 FROM eclipse-temurin:17.0.7_7-jdk as cruisecontrol
-ARG CRUISE_CONTROL_VERSION
+ARG CRUISE_CONTROL_VERSION=2.5.137
 WORKDIR /
 USER root
 RUN \

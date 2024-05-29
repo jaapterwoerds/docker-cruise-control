@@ -1,6 +1,19 @@
 version: "3"
 
 services:
+  prometheus:
+    image: prom/prometheus:v2.47.2
+    hostname: prometheus
+    container_name: prometheus
+    ports:
+      - "9090:9090"
+    networks:
+      - kafka
+    volumes:
+      - type: bind
+        source: ./prometheus
+        target: /etc/prometheus
+
   zookeeper:
     image: zookeeper:3.6
     restart: unless-stopped
@@ -67,7 +80,7 @@ services:
       retries: 30
 
   kafka-0:
-    image: confluentinc/cp-kafka:6.2.2
+    image: confluentinc/cp-kafka:7.5.1
     restart: unless-stopped
     user: root
     hostname: kafka-0
@@ -78,13 +91,18 @@ services:
       - KAFKA_ADVERTISED_LISTENERS=INTERNAL://kafka-0:9092,EXTERNAL://kafka-0:9093,CONTROLLER://kafka-0:9094
       - CLASSPATH=/metrics/*
       - KAFKA_BROKER_RACK=rack-0
+      - KAFKA_OPTS=-javaagent:/usr/share/jmx_exporter/jmx_prometheus_javaagent-0.20.0.jar=9200:/usr/share/jmx_exporter/kafka-broker.yml
     env_file:
       - kafka/kafka.env
     ports:
+      - "19100:9100"
+      - "19200:9200"
       - "19092:9092"
       - "19093:9093"
       - "19094:9094"
     expose:
+      - 9100
+      - 9200
       - 9092
       - 9093
       - 9094
@@ -106,6 +124,9 @@ services:
       - type: bind
         source: ./kafka/run.sh
         target: /run.sh
+      - type: bind
+        source: ./jmx-exporter
+        target: /usr/share/jmx_exporter/
     healthcheck:
       test: [
           "CMD",
@@ -119,7 +140,7 @@ services:
       retries: 30
 
   kafka-1:
-    image: confluentinc/cp-kafka:6.2.2
+    image: confluentinc/cp-kafka:7.5.1
     restart: unless-stopped
     user: root
     hostname: kafka-1
@@ -130,6 +151,7 @@ services:
       - KAFKA_ADVERTISED_LISTENERS=INTERNAL://kafka-1:9092,EXTERNAL://kafka-1:9093,CONTROLLER://kafka-1:9094
       - CLASSPATH=/metrics/*
       - KAFKA_BROKER_RACK=rack-1
+      - KAFKA_OPTS=-javaagent:/usr/share/jmx_exporter/jmx_prometheus_javaagent-0.20.0.jar=9200:/usr/share/jmx_exporter/kafka-broker.yml
     env_file:
       - kafka/kafka.env
     ports:
@@ -137,6 +159,8 @@ services:
       - "29093:9093"
       - "29094:9094"
     expose:
+      - 9100
+      - 9200
       - 9092
       - 9093
       - 9094
@@ -158,6 +182,9 @@ services:
       - type: bind
         source: ./kafka/run.sh
         target: /run.sh
+      - type: bind
+        source: ./jmx-exporter
+        target: /usr/share/jmx_exporter/
     healthcheck:
       test: [
           "CMD",
@@ -171,7 +198,7 @@ services:
       retries: 30
 
   kafka-2:
-    image: confluentinc/cp-kafka:6.2.2
+    image: confluentinc/cp-kafka:7.5.1
     restart: unless-stopped
     user: root
     hostname: kafka-2
@@ -182,6 +209,7 @@ services:
       - KAFKA_ADVERTISED_LISTENERS=INTERNAL://kafka-2:9092,EXTERNAL://kafka-2:9093,CONTROLLER://kafka-2:9094
       - CLASSPATH=/metrics/*
       - KAFKA_BROKER_RACK=rack-2
+      - KAFKA_OPTS=-javaagent:/usr/share/jmx_exporter/jmx_prometheus_javaagent-0.20.0.jar=9200:/usr/share/jmx_exporter/kafka-broker.yml
     env_file:
       - kafka/kafka.env
     ports:
@@ -189,6 +217,8 @@ services:
       - "39093:9093"
       - "39094:9094"
     expose:
+      - 9100
+      - 9200
       - 9092
       - 9093
       - 9094
@@ -210,6 +240,9 @@ services:
       - type: bind
         source: ./kafka/run.sh
         target: /run.sh
+      - type: bind
+        source: ./jmx-exporter
+        target: /usr/share/jmx_exporter/
     healthcheck:
       test: [
           "CMD",
@@ -258,7 +291,7 @@ services:
       #start_period: 30s
 
   producer:
-    image: confluentinc/cp-kafka:6.2.2
+    image: confluentinc/cp-kafka:7.5.1
     restart: unless-stopped
     hostname: producer
     container_name: producer
@@ -293,7 +326,7 @@ services:
       retries: 30
 
   consumer:
-    image: confluentinc/cp-kafka:6.2.2
+    image: confluentinc/cp-kafka:7.5.1
     restart: unless-stopped
     hostname: consumer
     container_name: consumer
