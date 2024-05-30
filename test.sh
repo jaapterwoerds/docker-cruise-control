@@ -15,7 +15,7 @@ readonly STATUS_QUERY='[[.AnalyzerState.isProposalReady,
                         | .[] | select(. == false)] | length'
 readonly BROKERS_QUERY='.KafkaBrokerState.Summary.Brokers'
 readonly EXPECTED_NUMBER_OF_BROKERS=3
-readonly READINESS_TIMEOUT="${READINESS_TIMEOUT:-300}"
+readonly READINESS_TIMEOUT="${READINESS_TIMEOUT:-600}"
 
 trap cleanup SIGINT EXIT
 

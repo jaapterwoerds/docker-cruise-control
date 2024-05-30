@@ -51,34 +51,6 @@ services:
       timeout: 5s
       retries: 30
 
-  cruisecontrolmetrics:
-    image: "${CRUISE_CONTROL_IMAGE}"
-    restart: "on-failure"
-    hostname: cruisecontrolmetrics
-    container_name: cruisecontrolmetrics
-    environment:
-      - METRICS_REPORTER_FILE=/opt/cruise-control/cruise-control/build/dependant-libs/cruise-control-metrics-reporter.jar
-    command: ["/run.sh"]
-    networks:
-      - kafka
-    volumes:
-      - type: volume
-        source: cruisecontrolmetrics
-        target: /metrics
-      - type: bind
-        source: ./cruisecontrolmetrics/run.sh
-        target: /run.sh
-    healthcheck:
-      test: [
-          "CMD",
-          "test",
-          "-f",
-          "/metrics/cruise-control-metrics-reporter.jar"
-      ]
-      interval: 10s
-      timeout: 5s
-      retries: 30
-
   kafka-0:
     image: confluentinc/cp-kafka:7.5.1
     restart: unless-stopped
@@ -89,7 +61,6 @@ services:
     environment:
       - KAFKA_BROKER_ID=0
       - KAFKA_ADVERTISED_LISTENERS=INTERNAL://kafka-0:9092,EXTERNAL://kafka-0:9093,CONTROLLER://kafka-0:9094,NLB://kafka-nlb:9000
-      - CLASSPATH=/metrics/*
       - KAFKA_BROKER_RACK=rack-0
       - KAFKA_OPTS=-javaagent:/usr/share/jmx_exporter/jmx_prometheus_javaagent-0.20.0.jar=9200:/usr/share/jmx_exporter/kafka-broker.yml
     env_file:
@@ -112,7 +83,6 @@ services:
       - kafka
     depends_on:
       - zookeeper
-      - cruisecontrolmetrics
     volumes:
       - type: volume
         source: kafka_0_data
@@ -120,9 +90,6 @@ services:
       - type: volume
         source: kafka_0_secrets
         target: /etc/kafka/secrets
-      - type: volume
-        source: cruisecontrolmetrics
-        target: /metrics
       - type: bind
         source: ./kafka/run.sh
         target: /run.sh
@@ -151,7 +118,6 @@ services:
     environment:
       - KAFKA_BROKER_ID=1
       - KAFKA_ADVERTISED_LISTENERS=INTERNAL://kafka-1:9092,EXTERNAL://kafka-1:9093,CONTROLLER://kafka-1:9094,NLB://kafka-nlb:9001
-      - CLASSPATH=/metrics/*
       - KAFKA_BROKER_RACK=rack-1
       - KAFKA_OPTS=-javaagent:/usr/share/jmx_exporter/jmx_prometheus_javaagent-0.20.0.jar=9200:/usr/share/jmx_exporter/kafka-broker.yml
     env_file:
@@ -172,7 +138,6 @@ services:
       - kafka
     depends_on:
       - zookeeper
-      - cruisecontrolmetrics
     volumes:
       - type: volume
         source: kafka_1_data
@@ -180,9 +145,6 @@ services:
       - type: volume
         source: kafka_1_secrets
         target: /etc/kafka/secrets
-      - type: volume
-        source: cruisecontrolmetrics
-        target: /metrics
       - type: bind
         source: ./kafka/run.sh
         target: /run.sh
@@ -211,7 +173,6 @@ services:
     environment:
       - KAFKA_BROKER_ID=2
       - KAFKA_ADVERTISED_LISTENERS=INTERNAL://kafka-2:9092,EXTERNAL://kafka-2:9093,CONTROLLER://kafka-2:9094,NLB://kafka-nlb:9002
-      - CLASSPATH=/metrics/*
       - KAFKA_BROKER_RACK=rack-2
       - KAFKA_OPTS=-javaagent:/usr/share/jmx_exporter/jmx_prometheus_javaagent-0.20.0.jar=9200:/usr/share/jmx_exporter/kafka-broker.yml
     env_file:
@@ -232,7 +193,6 @@ services:
       - kafka
     depends_on:
       - zookeeper
-      - cruisecontrolmetrics
     volumes:
       - type: volume
         source: kafka_2_data
@@ -240,9 +200,6 @@ services:
       - type: volume
         source: kafka_2_secrets
         target: /etc/kafka/secrets
-      - type: volume
-        source: cruisecontrolmetrics
-        target: /metrics
       - type: bind
         source: ./kafka/run.sh
         target: /run.sh
@@ -403,7 +360,6 @@ volumes:
   kafka_1_secrets:
   kafka_2_data:
   kafka_2_secrets:
-  cruisecontrolmetrics:
   haproxy:
 
 networks:

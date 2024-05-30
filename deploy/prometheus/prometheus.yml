@@ -20,9 +20,9 @@ scrape_configs:
     scrape_timeout: 10s
     scheme: http
     metric_relabel_configs:
-    - source_labels: [instance]
+    - source_labels: [broker_id]
       separator: ':'
-      regex: 'kafka-(\d):.*'
+      regex: '(\d)'
       replacement: 'kafka-nlb:900${1}'
       target_label: instance
     static_configs:
