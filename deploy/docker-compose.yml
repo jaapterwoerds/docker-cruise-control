@@ -291,7 +291,7 @@ services:
       #start_period: 30s
 
   producer:
-    image: confluentinc/cp-kafka:7.5.1
+    image: confluentinc/cp-kafka:6.2.2
     restart: unless-stopped
     hostname: producer
     container_name: producer
@@ -326,7 +326,7 @@ services:
       retries: 30
 
   consumer:
-    image: confluentinc/cp-kafka:7.5.1
+    image: confluentinc/cp-kafka:6.2.2
     restart: unless-stopped
     hostname: consumer
     container_name: consumer

@@ -19,6 +19,12 @@ scrape_configs:
     scrape_interval: 10s
     scrape_timeout: 10s
     scheme: http
+    metric_relabel_configs:
+    - source_labels: [instance]
+      separator: ':'
+      regex: 'kafka-(\d):.*'
+      replacement: 'kafka-${1}:900${1}'
+      target_label: instance
     static_configs:
       - targets: ["kafka-0:9200", "kafka-1:9200", "kafka-2:9200"]
 
@@ -26,5 +32,11 @@ scrape_configs:
     scrape_interval: 10s
     scrape_timeout: 10s
     scheme: http
+    metric_relabel_configs:
+    - source_labels: [instance]
+      separator: ':'
+      regex: 'kafka-(\d):.*'
+      replacement: 'kafka-${1}:900${1}'
+      target_label: instance
     static_configs:
       - targets: ["kafka-0:9100", "kafka-1:9100", "kafka-2:9100"]
