@@ -88,7 +88,7 @@ services:
     command: ["/run.sh"]
     environment:
       - KAFKA_BROKER_ID=0
-      - KAFKA_ADVERTISED_LISTENERS=INTERNAL://kafka-0:9092,EXTERNAL://kafka-0:9093,CONTROLLER://kafka-0:9094
+      - KAFKA_ADVERTISED_LISTENERS=INTERNAL://kafka-0:9095,EXTERNAL://kafka-0:9093,CONTROLLER://kafka-0:9094,NLB://kafka-nlb:9000
       - CLASSPATH=/metrics/*
       - KAFKA_BROKER_RACK=rack-0
       - KAFKA_OPTS=-javaagent:/usr/share/jmx_exporter/jmx_prometheus_javaagent-0.20.0.jar=9200:/usr/share/jmx_exporter/kafka-broker.yml
@@ -100,12 +100,14 @@ services:
       - "19092:9092"
       - "19093:9093"
       - "19094:9094"
+      - "19095:9095"
     expose:
       - 9100
       - 9200
       - 9092
       - 9093
       - 9094
+      - 9095
     networks:
       - kafka
     depends_on:
@@ -148,7 +150,7 @@ services:
     command: ["/run.sh"]
     environment:
       - KAFKA_BROKER_ID=1
-      - KAFKA_ADVERTISED_LISTENERS=INTERNAL://kafka-1:9092,EXTERNAL://kafka-1:9093,CONTROLLER://kafka-1:9094
+      - KAFKA_ADVERTISED_LISTENERS=INTERNAL://kafka-1:9095,EXTERNAL://kafka-1:9093,CONTROLLER://kafka-1:9094,NLB://kafka-nlb:9001
       - CLASSPATH=/metrics/*
       - KAFKA_BROKER_RACK=rack-1
       - KAFKA_OPTS=-javaagent:/usr/share/jmx_exporter/jmx_prometheus_javaagent-0.20.0.jar=9200:/usr/share/jmx_exporter/kafka-broker.yml
@@ -158,12 +160,14 @@ services:
       - "29092:9092"
       - "29093:9093"
       - "29094:9094"
+      - "29095:9095"
     expose:
       - 9100
       - 9200
       - 9092
       - 9093
       - 9094
+      - 9095
     networks:
       - kafka
     depends_on:
@@ -206,7 +210,7 @@ services:
     command: ["/run.sh"]
     environment:
       - KAFKA_BROKER_ID=2
-      - KAFKA_ADVERTISED_LISTENERS=INTERNAL://kafka-2:9092,EXTERNAL://kafka-2:9093,CONTROLLER://kafka-2:9094
+      - KAFKA_ADVERTISED_LISTENERS=INTERNAL://kafka-2:9095,EXTERNAL://kafka-2:9093,CONTROLLER://kafka-2:9094,NLB://kafka-nlb:9002
       - CLASSPATH=/metrics/*
       - KAFKA_BROKER_RACK=rack-2
       - KAFKA_OPTS=-javaagent:/usr/share/jmx_exporter/jmx_prometheus_javaagent-0.20.0.jar=9200:/usr/share/jmx_exporter/kafka-broker.yml
@@ -216,12 +220,14 @@ services:
       - "39092:9092"
       - "39093:9093"
       - "39094:9094"
+      - "39095:9095"
     expose:
       - 9100
       - 9200
       - 9092
       - 9093
       - 9094
+      - 9095
     networks:
       - kafka
     depends_on:
@@ -254,6 +260,31 @@ services:
       interval: 10s
       timeout: 5s
       retries: 30
+  kafka-nlb:
+    image: "haproxy"
+    restart: unless-stopped
+    hostname: kafka-nlb
+    container_name: kafka-nlb
+    networks:
+      - kafka
+    depends_on:
+      - kafka-0
+      - kafka-1
+      - kafka-2
+    expose:
+      - 9000
+      - 9001
+      - 9002
+      - 9095
+    ports:
+      - "49000:9000"
+      - "49001:9001"
+      - "49002:9002"
+      - "49095:9095"
+    volumes:
+    - type: bind
+      source: ./haproxy
+      target: /usr/local/etc/haproxy
 
   cruisecontrol:
     image: "${CRUISE_CONTROL_IMAGE}"
@@ -262,7 +293,7 @@ services:
     container_name: cruisecontrol
     command: "/opt/cruise-control/start.sh"
     environment:
-      - BOOTSTRAP_SERVERS=kafka-0:9092,kafka-1:9092,kafka-2:9092
+      - BOOTSTRAP_SERVERS=kafka-nlb:9095
     ports:
       - "8090:8090"
     expose:
@@ -296,11 +327,11 @@ services:
     hostname: producer
     container_name: producer
     environment:
-      - KAFKA_BROKERS=kafka-0:9092,kafka-1:9092,kafka-2:9092
+      - KAFKA_BROKERS=kafka-nlb:9095
       - TOPIC=airports
     env_file:
       - producer/producer.env
-    command: ["/wait-for-it", "-t", "120", "kafka-0:9092", "--", "/producer/run.sh"]
+    command: ["/wait-for-it", "-t", "120", "kafka-nlb:9095", "--", "/producer/run.sh"]
     networks:
       - kafka
     depends_on:
@@ -331,11 +362,11 @@ services:
     hostname: consumer
     container_name: consumer
     environment:
-      - KAFKA_BROKERS=kafka-0:9092,kafka-1:9092,kafka-2:9092
+      - KAFKA_BROKERS=kafka-nlb:9095
       - TOPIC=airports
     env_file:
       - consumer/consumer.env
-    command: ["/wait-for-it", "-t", "120", "kafka-0:9092", "--", "/consumer/run.sh"]
+    command: ["/wait-for-it", "-t", "120", "kafka-nlb:9095", "--", "/consumer/run.sh"]
     networks:
       - kafka
     depends_on:
