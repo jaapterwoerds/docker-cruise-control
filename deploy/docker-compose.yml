@@ -305,6 +305,7 @@ services:
       - kafka-0
       - kafka-1
       - kafka-2
+      - kafka-nlb
     volumes:
       - type: bind
         source: ./cruisecontrol
@@ -338,6 +339,7 @@ services:
       - kafka-0
       - kafka-1
       - kafka-2
+      - kafka-nlb
     volumes:
       - type: bind
         source: ./producer
@@ -373,6 +375,7 @@ services:
       - kafka-0
       - kafka-1
       - kafka-2
+      - kafka-nlb
     volumes:
       - type: bind
         source: ./consumer
@@ -401,6 +404,7 @@ volumes:
   kafka_2_data:
   kafka_2_secrets:
   cruisecontrolmetrics:
+  haproxy:
 
 networks:
   kafka:

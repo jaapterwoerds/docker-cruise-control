@@ -1,5 +1,5 @@
 FROM eclipse-temurin:17.0.7_7-jdk as cruisecontrol
-ARG CRUISE_CONTROL_VERSION=2.5.137
+ARG CRUISE_CONTROL_VERSION=prometheus-sampler-broker-id-map-change
 WORKDIR /
 USER root
 RUN \
@@ -11,8 +11,8 @@ RUN \
   set -xe; \
   git clone \
     --branch ${CRUISE_CONTROL_VERSION} \
-    --depth 1 \
-    https://github.com/linkedin/cruise-control.git \
+    # --depth 1 \
+    https://github.com/NielsAlebregtse/cruise-control.git \
   && cd cruise-control \
   && git rev-parse HEAD \
   && ./gradlew jar copyDependantLibs \
